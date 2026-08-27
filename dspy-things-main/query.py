@@ -67,7 +67,7 @@ class ReliableSQLGenerator(dspy.Module):
                 pred.sql_query = sql_query
                 return pred
             
-            print(f'[tentativas {tentativas + 1} ] SQL erro: {erro} ')
+            print(f'[tentativas {tentativas + 1} ] SQL inválida: {erro} \n SQL: {sql_query}')
             
             pred = self.repair_sql(
                 schema = schema,
@@ -76,14 +76,11 @@ class ReliableSQLGenerator(dspy.Module):
                 erro = erro
             )
             sql_query = pred.sql_query
-        
     
-            
-        
-    
+        pred.sql_query = NONE
+        pred.erro = f"Não foi possível gerar consulta SQL válida após {self.max_tentativas}"
+        return pred
 
-
-    
 
 
 def generate(ques9tion):
