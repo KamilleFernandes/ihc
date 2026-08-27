@@ -1,8 +1,10 @@
-from fastapi import FastAPI
-from queries import listar_produtos
+from fastapi import FastAPI, Query
+from query import generate
 
 app = FastAPI()
 
-@app.get("/estoque")
-def get_estoque():
-    return listar_produtos()
+
+@app.get("/consulta")
+def get_consulta(pergunta: str = Query(..., description="Pergunta em linguagem natural")):
+    resultado = generate(pergunta)
+    return {"pergunta": pergunta, "resultado": resultado}

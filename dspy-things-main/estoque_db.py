@@ -20,13 +20,14 @@ def create_db():
                 departamento TEXT,
                 preco float,
                 data_fab date,
-                data_ven date,
+                data_val date,
                 marca TEXT,
                 quantidade INT
 
             )""")
-
-  c.executemany("INSERT INTO produtos (nome, departamento, preco, data_fab, data_ven, marca, quantidade) VALUES (?, ?, ?, ?, ?, ?, ?)", [
+  c.execute("SELECT COUNT(*) FROM produtos")
+  if c.fetchone()[0] == 0:
+        c.executemany("INSERT INTO produtos (nome, departamento, preco, data_fab, data_val, marca, quantidade) VALUES (?, ?, ?, ?, ?, ?, ?)", [
     ("sabonete", "higiene", 2.50, '2026-10-20', '2029-10-20', "jhonson", 30 ),
     ("agua", "bebidas", 3.00, '2026-2-5', '2026-3-5', "cristal", 50 ),
     ("coca", "bebidas", 7.50, '2026-3-12', '2026-6-12', "Coca-Cola", 34),
