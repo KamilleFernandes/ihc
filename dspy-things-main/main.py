@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query
-from query import generate
+from server import gerar_sql
 
 app = FastAPI()
 

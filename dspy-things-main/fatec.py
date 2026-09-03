@@ -3,15 +3,19 @@ import telebot #pip install pytelegrambotapi
 import whisper #pip install -U openai-whisper
 ### whisper requires ffmpeg: on windows: choco install ffmpeg
 import json
-from estoque_db import get_connection
-from query import generate
+from server import get_connection
+from server import gerar_sql
+import dspy
+
+lm = dspy.LM('openai/gemma-4-E2B-it-IQ4_XS', api_base='http://localhost:1337/v1', api_key='not-needed')
+dspy.configure(lm=lm)
 
 API_TOKEN = '8876361936:AAH52YTMJHCUa3TD0Uvf6OqrwqpbOS6K0VM'
 bot = telebot.TeleBot(API_TOKEN)
 
 @bot.message_handler(func=lambda message: True)
 def reply_hi(message):
-  result = generate(message.text)
+  result = gerar_sql(message.text)
   bot.reply_to(message, json.dumps(result))
 
 @bot.message_handler(content_types=['voice'])
