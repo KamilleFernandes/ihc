@@ -1,0 +1,6 @@
+dspy>=2.5
+fastapi
+uvicorn[standard]
+pytelegrambotapi
+openai-whisper
+python-dotenv
