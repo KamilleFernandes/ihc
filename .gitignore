@@ -1,3 +1,3 @@
-/src/.env
-/src/_pycache_
-/src/estoque.db
+src/.env
+src/_pycache_
+src/estoque.db
