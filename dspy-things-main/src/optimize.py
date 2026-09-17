@@ -1,6 +1,15 @@
+import os
 import dspy
 from evaluate import DATASET, metrica_resultado_correto
-from server import ReliableSQLGenerator, init_db
+from server import LM_API_BASE, LM_API_KEY, LM_MODEL, ReliableSQLGenerator, init_db
+
+REFLECTION_LM_MODEL = os.environ.get("ESTOQUE_REFLECTION_LM_MODEL", LM_MODEL)
+REFLECTION_LM_API_BASE = os.environ.get("ESTOQUE_REFLECTION_LM_API_BASE", LM_API_BASE)
+REFLECTION_LM_API_KEY = os.environ.get("ESTOQUE_REFLECTION_LM_API_KEY", LM_API_KEY)
+
+
+def metrica_gepa(gold, pred, trace=None, pred_name=None, pred_trace=None) -> bool:
+    return metrica_resultado_correto(gold, pred, trace)
 
 
 def otimizar(caminho_saida: str = "sql_agent_otimizado.json") -> ReliableSQLGenerator:
@@ -16,9 +25,16 @@ def otimizar(caminho_saida: str = "sql_agent_otimizado.json") -> ReliableSQLGene
     treino = exemplos[:metade]
     validacao = exemplos[metade:] or exemplos
 
+    reflection_lm = dspy.LM(
+        REFLECTION_LM_MODEL,
+        api_base=REFLECTION_LM_API_BASE,
+        api_key=REFLECTION_LM_API_KEY,
+    )
+
     otimizador = dspy.GEPA(
-        metric=metrica_resultado_correto,
+        metric=metrica_gepa,
         auto="light",
+        reflection_lm=reflection_lm,
     )
 
     generator_otimizado = otimizador.compile(
