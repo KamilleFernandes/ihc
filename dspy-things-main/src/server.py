@@ -12,6 +12,7 @@ LM_MODEL = os.environ.get("ESTOQUE_LM_MODEL", "openai/gemma-4-E2B-it-IQ4_XS")
 LM_API_BASE = os.environ.get("ESTOQUE_LM_API_BASE", "http://localhost:1337/v1")
 LM_API_KEY = os.environ.get("ESTOQUE_LM_API_KEY", "not-needed")
 MAX_TENTATIVAS_SQL = int(os.environ.get("ESTOQUE_MAX_TENTATIVAS_SQL", "3"))
+OTIMIZADO_PATH = os.environ.get("ESTOQUE_SQL_AGENT_PATH", str(BASE_DIR/"sql_agent_otimizado.json"))
 
 dspy.configure(lm=dspy.LM(LM_MODEL, api_base=LM_API_BASE, api_key=LM_API_KEY))
 
@@ -62,17 +63,12 @@ def init_db() -> None:
 
 
 class TextToSQL(dspy.Signature):
-    """Gera uma consulta SQL SQLite a partir de uma pergunta em português.
-
-    Gere APENAS comandos SELECT. Nunca gere INSERT, UPDATE, DELETE ou DROP.
-    """
     dbschema: str = dspy.InputField(desc="Schema das tabelas disponíveis")
     question: str = dspy.InputField(desc="Pergunta em linguagem natural")
     sql_query: str = dspy.OutputField(desc="Consulta SQL SELECT válida para SQLite")
 
 
 class SQLRepair(dspy.Signature):
-    """Corrige uma consulta SQL que falhou, usando a mensagem de erro do banco."""
     dbschema: str = dspy.InputField(desc="Schema das tabelas disponíveis")
     question: str = dspy.InputField(desc="Pergunta original em linguagem natural")
     sql_query_com_erro: str = dspy.InputField(desc="SQL que falhou")
@@ -82,7 +78,6 @@ class SQLRepair(dspy.Signature):
 
 class ConsultaInvalidaError(Exception):
     pass
-
 
 def _eh_select(sql_query: str) -> bool:
     return sql_query.strip().lower().startswith("select")
@@ -134,9 +129,12 @@ class ReliableSQLGenerator(dspy.Module):
             f"Último erro: {ultimo_erro}"
         )
 
+_generator = ReliableSQLGenerator()
+if os.path.exists(OTIMIZADO_PATH):
+    _generator.load(OTIMIZADO_PATH)
 
 def gerar_sql(question: str) -> str:
-    pred = ReliableSQLGenerator()(question=question)
+    pred = _generator(question=question)
     return pred.sql_query
 
 
