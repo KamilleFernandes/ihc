@@ -5,24 +5,26 @@ import whisper
 from dotenv import load_dotenv
 from server import ConsultaInvalidaError, gerar_sql, get_connection, init_db
 
+# recebe variável de ambiente do bot do telegram 
 load_dotenv()
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 if not TELEGRAM_BOT_TOKEN:
     raise RuntimeError("Defina a variável de ambiente TELEGRAM_BOT_TOKEN antes de rodar o bot.")
 
+# inicia carregando o bot 
 init_db()
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
 _modelo_whisper = None
 
-
+# transcreve mensagem de voz
 def _transcrever(filepath: str, modelo: str = "tiny") -> str:
     global _modelo_whisper
     if _modelo_whisper is None:
         _modelo_whisper = whisper.load_model(modelo)
     return _modelo_whisper.transcribe(filepath)["text"]
 
-
+# função que exibe a resposta da pergunta do usuário 
 def _responder(pergunta: str) -> str:
     try:
         sql = gerar_sql(pergunta)
@@ -36,14 +38,19 @@ def _responder(pergunta: str) -> str:
     finally:
         conn.close()
 
-
+# recebe mensagem em texto e responde
 @bot.message_handler(func=lambda message: True, content_types=["text"])
 def responder_texto(message):
     bot.reply_to(message, _responder(message.text))
 
-
+# recebe mensagem de voz, transcreve e responde 
 @bot.message_handler(content_types=["voice"])
 def responder_voz(message):
     file_path = bot.get_file_url(message.voice.file_id)
     texto = _transcrever(file_path)
     bot.reply_to(message, _responder(texto))
+
+# execução o bot 
+if __name__ == "__main__":
+    bot.delete_webhook()
+    bot.polling()

@@ -2,6 +2,7 @@ import sqlite3
 import dspy
 from server import ReliableSQLGenerator, get_connection, init_db
 
+# cria um dataset com questões e a query esperada a ser gerada pela llm 
 DATASET = [
     {
         "question": "qual o departamento do sabonete?",
@@ -61,7 +62,7 @@ DATASET = [
     },
 ]
 
-
+# função para executar sql e retornar resultado
 def _executar(sql: str) -> set:
     conn = get_connection()
     try:
@@ -69,14 +70,14 @@ def _executar(sql: str) -> set:
     finally:
         conn.close()
 
-
+# executa o sql esperado e o gerado pela llm e retorna True ou False se forem iguais, ou False se a query gerada der erro 
 def metrica_resultado_correto(example, pred, trace=None) -> bool:
     try:
         return _executar(example.sql_esperado) == _executar(pred.sql_query)
     except sqlite3.Error:
         return False
 
-
+# avalia o resultado de cada um dos exemplos, comparando com o resultado esperado, retorna resultado da avaliação 
 def avaliar() -> float:
     init_db()
     generator = ReliableSQLGenerator()
@@ -94,6 +95,6 @@ def avaliar() -> float:
     )
     return avaliador(generator)
 
-
+# executa avaliação 
 if __name__ == "__main__":
     print(f"Avaliação: {avaliar()}")

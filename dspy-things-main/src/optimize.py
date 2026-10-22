@@ -7,11 +7,12 @@ REFLECTION_LM_MODEL = os.environ.get("ESTOQUE_REFLECTION_LM_MODEL", LM_MODEL)
 REFLECTION_LM_API_BASE = os.environ.get("ESTOQUE_REFLECTION_LM_API_BASE", LM_API_BASE)
 REFLECTION_LM_API_KEY = os.environ.get("ESTOQUE_REFLECTION_LM_API_KEY", LM_API_KEY)
 
-
+# otimização com gepa 
+# adapta assinatura da metrica para o formato do GEPA
 def metrica_gepa(gold, pred, trace=None, pred_name=None, pred_trace=None) -> bool:
     return metrica_resultado_correto(gold, pred, trace)
 
-
+# otimiza a llm usando metade dos exemplos é usado pelo GEPA para refletir e propor novos prompts, e a outra é usada para escolher os melhores resultados
 def otimizar(caminho_saida: str = "sql_agent_otimizado.json") -> ReliableSQLGenerator:
     init_db()
     generator = ReliableSQLGenerator()
@@ -37,16 +38,18 @@ def otimizar(caminho_saida: str = "sql_agent_otimizado.json") -> ReliableSQLGene
         reflection_lm=reflection_lm,
     )
 
+    # gerador otimizado com o treino da llm feito com as metricas dos exemplos 
     generator_otimizado = otimizador.compile(
         generator,
         trainset=treino,
         valset=validacao,
     )
 
+    # salva o gerador otimizado no em um arquivo JSON 
     generator_otimizado.save(caminho_saida)
     print(f"Gerador otimizado salvo em {caminho_saida}")
     return generator_otimizado
 
-
+# executa otimização 
 if __name__ == "__main__":
     otimizar()
