@@ -100,7 +100,7 @@ def _validar_no_banco_sombra(sql_query: str) -> str | None:
     try:
         sombra = sqlite3.connect(":memory:")
         sombra.executescript(SCHEMA_SQL)
-        sombra.conn.executemany(
+        sombra.executemany(
                 """INSERT INTO produtos
                    (nome, departamento, preco, data_fab, data_ven, marca, quantidade, fornecedor, estoque_minimo)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -133,7 +133,7 @@ class ReliableSQLGenerator(dspy.Module):
         # caso seja select, valida no banco sombra e caso dê erro, variável ultimo_erro recebe o resultado do erro
         # recebe erro, manda para llm gerar nova sql
         # a cada tentativa gera uma correção, na terceira retorna o último resultado
-        // caso tenha erro exibe a mensagem de que não foi possível gerar uma consulta válida e mostra o erro 
+        # caso tenha erro exibe a mensagem de que não foi possível gerar uma consulta válida e mostra o erro 
 
         for _ in range(self.max_tentativas):
             if not _eh_select(sql_query):
@@ -192,7 +192,7 @@ def consulta_natural(pergunta: str = Query(..., description="Pergunta em linguag
     finally:
         conn.close()
 
-// execução do server
+# execução do server
 import uvicorn
 
 if __name__ == "__main__":

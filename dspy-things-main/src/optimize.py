@@ -45,7 +45,7 @@ def otimizar(caminho_saida: str = "sql_agent_otimizado.json") -> ReliableSQLGene
         valset=validacao,
     )
 
-    # salva o gerador otimizado no em um arquivo JSON 
+    # salva o gerador otimizado
     generator_otimizado.save(caminho_saida)
     print(f"Gerador otimizado salvo em {caminho_saida}")
     return generator_otimizado

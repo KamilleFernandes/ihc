@@ -71,11 +71,20 @@ def _executar(sql: str) -> set:
         conn.close()
 
 # executa o sql esperado e o gerado pela llm e retorna True ou False se forem iguais, ou False se a query gerada der erro 
+
 def metrica_resultado_correto(example, pred, trace=None) -> bool:
     try:
-        return _executar(example.sql_esperado) == _executar(pred.sql_query)
-    except sqlite3.Error:
+        sql_esperado = example.sql_esperado
+        sql_gerado = pred.sql_query
+
+        resultado_esperado = _executar(sql_esperado)
+        resultado_gerado = _executar(sql_gerado)
+
+        return resultado_esperado == resultado_gerado
+
+    except (sqlite3.Error, AttributeError, TypeError):
         return False
+
 
 # avalia o resultado de cada um dos exemplos, comparando com o resultado esperado, retorna resultado da avaliação 
 def avaliar() -> float:
@@ -92,6 +101,7 @@ def avaliar() -> float:
         metric=metrica_resultado_correto,
         display_progress=True,
         display_table=True,
+        provide_traceback=True
     )
     return avaliador(generator)
 
